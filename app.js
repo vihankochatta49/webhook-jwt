@@ -4,10 +4,10 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const rp = require('request-promise');
 const config = require('./config');
-const sgMail = require('@sendgrid/mail');
+// const sgMail = require('@sendgrid/mail');
 const path = require('path');
 //access Sendgrid API key 
-sgMail.setApiKey(config.SENDGRID_API_KEY);
+// sgMail.setApiKey(config.SENDGRID_API_KEY);
 // Generate a JWT token to authenticate and make Zoom API calls 
 const payload = {
     iss: config.ZOOM_API_KEY,
@@ -22,7 +22,7 @@ app.get('/', (request, response) => {
 });
 
 // Set up a webhook listener for your Webhook Event - in this case we are listening to Webinar Ended event but you can add any events of your choice.
-app.post('/', bodyParser.raw({ type: 'application/json' }), (req, res) => {
+app.post('/webhook', bodyParser.raw({ type: 'application/json' }), (req, res) => {
 
     let event;
 
@@ -33,6 +33,7 @@ app.post('/', bodyParser.raw({ type: 'application/json' }), (req, res) => {
     }
     // Check to see if you received the event or not.
     console.log(event)
+    console.log(event.download_url);
     if (req.headers.authorization === config.VERIFICATION_TOKEN) {
         res.status(200);
 
@@ -57,49 +58,49 @@ app.post('/', bodyParser.raw({ type: 'application/json' }), (req, res) => {
 
 
 
-        rp(options)
-            .then(function (response) {
+        // rp(options)
+        //     .then(function (response) {
 
-                var myregistrantobj= response.registrants;
-                //console.log("Registrants:", myregistrantobj)
-                //fetch only the email addresses from the response and store the addresses in an array
+        //         var myregistrantobj= response.registrants;
+        //         //console.log("Registrants:", myregistrantobj)
+        //         //fetch only the email addresses from the response and store the addresses in an array
                 
-                var emailList = []
-                for (var i = 0; i < myregistrantobj.length; i++) {
-                    //Store emails as an array of strings to match the request body for SendGrid API
-                    emailobjs = myregistrantobj[i].email
-                    emailList.push(emailobjs);
+        //         var emailList = []
+        //         for (var i = 0; i < myregistrantobj.length; i++) {
+        //             //Store emails as an array of strings to match the request body for SendGrid API
+        //             emailobjs = myregistrantobj[i].email
+        //             emailList.push(emailobjs);
                     
-                }
+        //         }
               
-                // check if the emails have been fetched or not by printing to the console
-                console.log(emailList);
+        //         // check if the emails have been fetched or not by printing to the console
+        //         console.log(emailList);
                 
-                // Call SendGrid Email API to send the email to participants. You can customize the email content as you like.
+        //         // Call SendGrid Email API to send the email to participants. You can customize the email content as you like.
 
-                const msg = {
+        //         const msg = {
 
-                    to: emailList,
-                    from: 'provideyouremailaddresshere@gmail.com',
-                    subject: 'We are sorry that we missed you.',
-                    text: 'Please, let us know if the timing of these webinars do not work for you. We hope you can join us next time.'
+        //             to: emailList,
+        //             from: 'provideyouremailaddresshere@gmail.com',
+        //             subject: 'We are sorry that we missed you.',
+        //             text: 'Please, let us know if the timing of these webinars do not work for you. We hope you can join us next time.'
 
-                };
+        //         };
                 
-                return msg;
+        //         return msg;
 
-            })
-            .then(function(msg) {
-                sgMail.sendMultiple(msg);
-            })
-            .then(function(){
-                console.log("Email sent.")
-            })
+        //     })
+        //     .then(function(msg) {
+        //         sgMail.sendMultiple(msg);
+        //     })
+        //     .then(function(){
+        //         console.log("Email sent.")
+        //     })
             
-            .catch(function (err) {
-                // API call failed...
-                console.log('API call failed, reason ', err);
-            });
+        //     .catch(function (err) {
+        //         // API call failed...
+        //         console.log('API call failed, reason ', err);
+        //     });
 
 
     } else {
